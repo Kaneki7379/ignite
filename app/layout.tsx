@@ -4,6 +4,7 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/auth";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { Toaster } from "sonner";
 
 
 const poppins = Poppins({
@@ -36,6 +37,7 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             {children}
+           <Toaster/>
           </ThemeProvider>
         </body>
       </html>
