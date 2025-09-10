@@ -53,7 +53,7 @@ import {
   Eye,
 } from "lucide-react";
 import { toast } from "sonner";
-import { MarkedToggleButton } from "./toggle-star";
+// import { MarkedToggleButton } from "./toggle-star";
 
 interface ProjectTableProps {
   projects: Project[];
@@ -66,7 +66,6 @@ interface EditProjectData {
   title: string;
   description: string;
 }
-
 
 export default function ProjectTable({
   projects,
@@ -117,18 +116,7 @@ export default function ProjectTable({
   };
 
   const handleMarkasFavorite = async (project: Project) => {
-    if (!onMarkasFavorite) return;
-
-    setIsLoading(true);
-    try {
-      await onMarkasFavorite(project.id);
-      toast.success("Project marked as favorite successfully");
-    } catch (error) {
-      toast.error("Failed to mark project as favorite");
-      console.error("Error marking project as favorite:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    // currently not implemented
   };
 
   const handleDeleteProject = async () => {
@@ -160,6 +148,19 @@ export default function ProjectTable({
       console.error("Error duplicating project:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // ✅ fixed: define missing function
+  const copyProjectUrl = async (projectId: string) => {
+    try {
+      await navigator.clipboard.writeText(
+        `${window.location.origin}/playground/${projectId}`
+      );
+      toast.success("Project URL copied to clipboard");
+    } catch (error) {
+      toast.error("Failed to copy URL");
+      console.error("Error copying URL:", error);
     }
   };
 
@@ -224,10 +225,10 @@ export default function ProjectTable({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
                       <DropdownMenuItem asChild>
-                        <MarkedToggleButton
-                          markedForRevision={project.Starmark[0]?.isMarked}
+                        {/* <MarkedToggleButton
+                          markedForRevision={project.Starmark?.[0]?.isMarked}
                           id={project.id}
-                        />
+                        /> */}
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link
