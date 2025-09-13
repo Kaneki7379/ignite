@@ -23,10 +23,10 @@ model User {
 
   staredPlayground StarMark[]
 
-  account    Account[]
-  role       UserRole     @default(USER)
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+  account   Account[]
+  role      UserRole  @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Account {
@@ -64,12 +64,22 @@ model Playground {
   description String
   template    Templates @default(REACT)
 
-  Starmark StarMark[]
-  userId   String
-  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Starmark      StarMark[]
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateFiles TemplateFile[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model TemplateFile {
+  id           String     @id @default(cuid()) @map("_id")
+  content      Json
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  playgroundId String     @unique
+  playground   Playground @relation(fields: [playgroundId], references: [id], onDelete: Cascade)
 }
 
 model StarMark {
