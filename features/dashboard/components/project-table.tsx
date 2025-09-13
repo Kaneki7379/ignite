@@ -188,6 +188,9 @@ export default function ProjectTable({
                     >
                       <span className="font-semibold">{project.title}</span>
                     </Link>
+                    <span className="text-sm text-gray-500 line-clamp-1">
+                      {project.description}
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -284,6 +287,81 @@ export default function ProjectTable({
           </TableBody>
         </Table>
       </div>
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-2-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Project</DialogTitle>
+            <DialogDescription>
+              Make changes to your project details here.Click save when you're
+              done.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="title">Project Title</Label>
+              <Input
+                id="title"
+                value={editData.title}
+                onChange={(e) =>
+                  setEditData((prev) => ({ ...prev, title: e.target.value }))
+                }
+                placeholder="Enter project title"
+              ></Input>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={editData.description}
+                onChange={(e) =>
+                  setEditData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                placeholder="Enter project description"
+                rows={3}
+              ></Textarea>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant={"outline"}
+              onClick={() => setEditDialogOpen(false)}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant={"brand"}
+              onClick={handleUpdateProject}
+            >
+              {isLoading ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>Delete Project</AlertDialogHeader>
+          <AlertDialogDescription>
+            Are you sure you want to delete <span className="font-semibold text-red-500">"{selectedProject?.title}"?</span> This
+            action cannot be undone.All files and data associated with this
+            project will be permanently removed.
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteProject}
+              disabled={isLoading}
+              className="bg-destructive text-desctructive-foreground hover:bg-destructive/90"
+            >{isLoading ? "Deleting..." : "Delete Project"}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
