@@ -10,14 +10,14 @@ export const createPlayground = async (data: {
   description: string;
 }) => {
   const { template, title, description } = data;
+  const user = await currentUser();
+
+  if (!user?.id) {
+    console.error("Attempted to create a playground without an authenticated user.");
+    return null;
+  }
 
   try {
-    const user = await currentUser();
-
-    if (!user?.id) {
-      console.error("Attempted to create a playground without an authenticated user.");
-      return null;
-    }
 
     const playground = await db.playground.create({
       data: {
@@ -36,12 +36,13 @@ export const createPlayground = async (data: {
 };
 
 export const getAllPlaygroundForUser = async () => {
-  try {
-    const user = await currentUser();
+  const user = await currentUser();
 
-    if (!user?.id) {
-      return [];
-    }
+  if (!user?.id) {
+    return [];
+  }
+
+  try {
 
     const playground = await db.playground.findMany({
       where: {

@@ -10,12 +10,8 @@ import AddRepoButton from "@/features/dashboard/components/add-repo-button";
 import ProjectTable from "@/features/dashboard/components/project-table";
 
 const Page = async () => {
-  const playgrounds = await getAllPlaygroundForUser().catch((error) => {
-    console.error("Failed to load playgrounds", error);
-    return [];
-  });
-
-  const safePlaygrounds = Array.isArray(playgrounds) ? playgrounds : [];
+  const playgrounds = await getAllPlaygroundForUser();
+  const hasProjects = playgrounds.length > 0;
 
   return (
     <div className="flex flex-col justify-start items-center min-h-screen mx-auto max-w-7xl px-4 py-10">
@@ -25,20 +21,20 @@ const Page = async () => {
       </div>
 
       <div className="mt-10 flex flex-col justify-center items-center w-full">
-        {safePlaygrounds.length === 0 ? (
+        {hasProjects ? (
+          <ProjectTable
+            //  @ts-ignore
+            // TODO : NEED TO UPDATE TYPES OF THE PLAYGROUND
+            projects={playgrounds}
+            onDeleteProject={deleteProjectById}
+            onUpdateProject={editProjectById}
+            onDuplicateProject={duplicateProjectById}
+          />
+        ) : (
           <EmptyState
             title="No projects Found"
             description="Create a new project to get started"
             imageSrc="/empty-state.svg"
-          />
-        ) : (
-          <ProjectTable
-            //  @ts-ignore
-            // TODO : NEED TO UPDATE TYPES OF THE PLAYGROUND
-            projects={safePlaygrounds}
-            onDeleteProject={deleteProjectById}
-            onUpdateProject={editProjectById}
-            onDuplicateProject={duplicateProjectById}
           />
         )}
       </div>
