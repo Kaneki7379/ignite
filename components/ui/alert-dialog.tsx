@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
@@ -45,9 +46,12 @@ function AlertDialogOverlay({
 }
 
 function AlertDialogContent({
+  children,
   className,
   ...props
-}: React.ComponentProps<typeof AlertDialogPrimitive.Content>) {
+}: React.ComponentProps<typeof AlertDialogPrimitive.Content> & {
+  children: React.ReactNode
+}) {
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
@@ -58,7 +62,9 @@ function AlertDialogContent({
           className
         )}
         {...props}
-      />
+      >
+        {children}
+      </AlertDialogPrimitive.Content>
     </AlertDialogPortal>
   )
 }
@@ -94,14 +100,20 @@ function AlertDialogFooter({
 
 function AlertDialogTitle({
   className,
+  children,
   ...props
-}: React.ComponentProps<typeof AlertDialogPrimitive.Title>) {
+}: React.ComponentProps<typeof AlertDialogPrimitive.Title> & {
+  children: React.ReactNode
+}) {
+  // Wrap children with VisuallyHidden if empty
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
       className={cn("text-lg font-semibold", className)}
       {...props}
-    />
+    >
+      {children || <VisuallyHidden>Alert</VisuallyHidden>}
+    </AlertDialogPrimitive.Title>
   )
 }
 
