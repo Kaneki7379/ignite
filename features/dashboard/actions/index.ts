@@ -10,108 +10,113 @@ export const createPlayground = async (data: {
   description: string;
 }) => {
   const { template, title, description } = data;
-  const user = await currentUser();
+
   try {
+    const user = await currentUser();
+
+    if (!user?.id) {
+      console.error("Attempted to create a playground without an authenticated user.");
+      return null;
+    }
+
     const playground = await db.playground.create({
-        data:{
-            title,
-            description,
-            template,
-            userId:user?.id!
-        }
+      data: {
+        title,
+        description,
+        template,
+        userId: user.id,
+      },
     });
+
     return playground;
   } catch (error) {
-    console.error(error)
+    console.error("Failed to create playground", error);
     return null;
   }
 };
 
-export const getAllPlaygroundForUser = async()=>{
+export const getAllPlaygroundForUser = async () => {
+  try {
     const user = await currentUser();
-    try{
-        const playground = await db.playground.findMany({
-            where:{
-                userId:user?.id
-            },
-            include:{
-                user:true,
-                Starmark:{
-                    where:{
-                        userId:user?.id
-                    },
-                    select:{
-                        isMarked:true
-                    }
-                }
-            }
-        })
-        return playground
-    }
-    catch(error){
-        console.error(error)
-        return null;
-    }
-}
 
-export const deleteProjectById = async (id:string)=>{
-    try {
-        await db.playground.delete({
-            where:{id}
-        })
-        revalidatePath("/dashboard")
-    } catch (error) {
-        console.log(error)
+    if (!user?.id) {
+      return [];
     }
-}
 
-export const editProjectById = async (id:string,data:{title:string , description:string})=>{
-    try {
-        await db.playground.update({
-            where:{id},
-            data:data
-        })
-        revalidatePath("/dashboard")
-    } catch (error) {
-        console.log(error)
-    }
-}
+    const playground = await db.playground.findMany({
+      where: {
+        userId: user.id,
+      },
+      include: {
+        user: true,
+        Starmark: {
+          where: {
+            userId: user.id,
+          },
+          select: {
+            isMarked: true,
+          },
+        },
+      },
+    });
+
+    return playground;
+  } catch (error) {
+    console.error("Failed to fetch playgrounds for user", error);
+    return [];
+  }
+};
+
+export const deleteProjectById = async (id: string) => {
+  try {
+    await db.playground.delete({
+      where: { id },
+    });
+    revalidatePath("/dashboard");
+  } catch (error) {
+    console.error("Failed to delete project", error);
+  }
+};
+
+export const editProjectById = async (
+  id: string,
+  data: { title: string; description: string }
+) => {
+  try {
+    await db.playground.update({
+      where: { id },
+      data,
+    });
+    revalidatePath("/dashboard");
+  } catch (error) {
+    console.error("Failed to update project", error);
+  }
+};
 
 export const duplicateProjectById = async (id: string) => {
-    try {
-        // Fetch the original playground data
-        const originalPlayground = await db.playground.findUnique({
-            where: { id },
-            include: {
-                // templateFiles: true, // Include related template files
-            },
-        });
+  try {
+    const originalPlayground = await db.playground.findUnique({
+      where: { id },
+    });
 
-        if (!originalPlayground) {
-            throw new Error("Original playground not found");
-        }
-
-        // Create a new playground with the same data but a new ID
-        const duplicatedPlayground = await db.playground.create({
-            data: {
-                title: `${originalPlayground.title} (Copy)`,
-                description: originalPlayground.description,
-                template: originalPlayground.template,
-                userId: originalPlayground.userId,
-                // templateFiles: {
-                //   // @ts-ignore
-                //     create: originalPlayground.templateFiles.map((file) => ({
-                //         content: file.content,
-                //     })),
-                // },
-            },
-        });
-
-        // Revalidate the dashboard path to reflect the changes
-        revalidatePath("/dashboard");
-
-        return duplicatedPlayground;
-    } catch (error) {
-        console.error("Error duplicating project:", error);
+    if (!originalPlayground) {
+      throw new Error("Original playground not found");
     }
-}
+
+    const duplicatedPlayground = await db.playground.create({
+      data: {
+        title: `${originalPlayground.title} (Copy)`,
+        description: originalPlayground.description,
+        template: originalPlayground.template,
+        userId: originalPlayground.userId,
+      },
+    });
+
+    revalidatePath("/dashboard");
+
+    return duplicatedPlayground;
+  } catch (error) {
+    console.error("Error duplicating project", error);
+    return null;
+  }
+};
