@@ -22,19 +22,37 @@ export const useWebContainer = ({ templateData }: UseWebContainerProps): UseWebC
   const [instance, setInstance] = useState<WebContainer | null>(null);
 
   useEffect(() => {
-    let mounted = true;
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    let isActive = true;
+    let bootedInstance: WebContainer | null = null;
 
     async function initializeWebContainer() {
       try {
+        if (!window.crossOriginIsolated) {
+          console.error('WebContainers require cross-origin isolation headers to run.');
+          if (isActive) {
+            setError('WebContainers require cross-origin isolation headers to run.');
+            setIsLoading(false);
+          }
+          return;
+        }
+
         const webcontainerInstance = await WebContainer.boot();
-        
-        if (!mounted) return;
-        
+
+        if (!isActive) {
+          await webcontainerInstance.teardown();
+          return;
+        }
+
+        bootedInstance = webcontainerInstance;
         setInstance(webcontainerInstance);
         setIsLoading(false);
       } catch (err) {
         console.error('Failed to initialize WebContainer:', err);
-        if (mounted) {
+        if (isActive) {
           setError(err instanceof Error ? err.message : 'Failed to initialize WebContainer');
           setIsLoading(false);
         }
@@ -44,9 +62,13 @@ export const useWebContainer = ({ templateData }: UseWebContainerProps): UseWebC
     initializeWebContainer();
 
     return () => {
-      mounted = false;
-      if (instance) {
-        instance.teardown();
+      isActive = false;
+
+      if (bootedInstance) {
+        void bootedInstance.teardown().catch((teardownError) => {
+          console.error('Failed to teardown WebContainer:', teardownError);
+        });
+        bootedInstance = null;
       }
     };
   }, []);
